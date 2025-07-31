@@ -2,7 +2,7 @@ const userModel = require("../models/usersModel");
 const transporter = require("../utils/mailTransporter");
 const bcrypt = require('bcrypt');
 const otpModel = require("../models/otpModel")
-const generateOPT = require("../utils/generateOPT");
+const generateOTP = require("../utils/generateOTP");
 const { v4 } = require("uuid");
 
 // add new user
@@ -28,7 +28,7 @@ const register = async (req, res) => {
         });
         return;
     }
-    const otp = generateOPT();
+    const otp = generateOTP();
     const otpToken = v4();
 
     const otpDetails = await otpModel.create({
@@ -42,7 +42,7 @@ const register = async (req, res) => {
         from: process.env.EMAIL_USER,
         to: user.email,
         subject: "Verification email",
-       html:`
+        html: `
        <h1>Verification email</h1>
        <div>
             Use the above code to verify your email:</br>
@@ -57,4 +57,38 @@ const register = async (req, res) => {
     });
 };
 
-module.exports = { register };
+const verify = async (req, res) => {
+    const { otp, otpToken, purpose } = req.body;
+
+    if (purpose != "verify-email") {
+        res.status(422).send({
+            message: "purpose invalid"
+        });
+        return;
+    }
+
+    const otpDetails = await otpModel.findOne({
+        otpToken, purpose
+    });
+    // console.log(otpDetails);
+
+    if (otp != otpDetails.otp) {
+        res.status(406).send({
+            message: "otp invalid"
+        });
+        return;
+    }
+    const verifiedUser = await userModel.findByIdAndUpdate(
+        otpDetails.userId,
+        { isVerified: true },
+        { new: true }
+    );
+
+    res.send({
+        message: "user successfuly verified",
+        verifiedUser,
+    })
+}
+
+
+module.exports = { register, verify };

@@ -1,28 +1,28 @@
 const mongoose = require("mongoose");
 
-const schema =  mongoose.Schema({
-    userId:{
+const schema = mongoose.Schema({
+    userId: {
         type: mongoose.Types.ObjectId,
         ref: "users",
         require: true
     },
-    opt:{
-        type:Number,
-        require:true
+    otp: {
+        type: Number,
+        require: true
     },
     otpToken: {
         type: String,
         require: true
     },
-    purpose:{
+    purpose: {
         type: String,
-        enum:["verify-email","reset-password"],
+        enum: ["verify-email", "reset-password"],
         require: true
     }
 },
- {timestamps:true}
+    { timestamps: true }
 );
 
-const otpModel = mongoose.model("opts", schema);
+const otpModel = mongoose.model("otps", schema);
 
 module.exports = otpModel;
