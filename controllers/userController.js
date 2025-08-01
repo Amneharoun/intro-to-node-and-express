@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const otpModel = require("../models/otpModel")
 const generateOTP = require("../utils/generateOTP");
 const { v4 } = require("uuid");
+const jwt = require("jsonwebtoken");
 
 // add new user
 const register = async (req, res) => {
@@ -87,8 +88,40 @@ const verify = async (req, res) => {
     res.send({
         message: "user successfuly verified",
         verifiedUser,
+    });
+};
+
+const login = async (req, res) => {
+    // console.log(req,body);    
+    const { email, password } = req.body;
+    const users = await userModel.findOne({ email });
+
+    if (!users) {
+        res.status(404).send({
+            message: "user not found"
+        });
+        return;
+    }
+    const  isPasswordCorrect = bcrypt.compareSync(password,users.password);
+    
+    if (!isPasswordCorrect) {
+        res.status(401).send({
+            message: "invalid credentials"
+        });
+        return;  
+    }
+    
+    const token = jwt.sign({
+        userId: users.userID,
+        email: users.email
+    },
+    process.env.SERCRET_KEY
+);
+    console.log(token);
+    res.send({
+        message: "user connect sucessfuly"
     })
-}
+    
+};
 
-
-module.exports = { register, verify };
+module.exports = { register, verify, login };

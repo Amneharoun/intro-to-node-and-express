@@ -25,7 +25,7 @@ app.use(express.json());
 // Routes
 
 app.use("/students", studentRouter);
-app.use("/users", userRouter);
+app.use("/auth", userRouter);
 // Expose the server on the defined port
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
